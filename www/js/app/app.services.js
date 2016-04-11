@@ -365,4 +365,88 @@ angular.module('your_app_name.app.services', [])
 })
 
 
+.service('Auth', function (FURL, $firebaseAuth, $state, $firebaseObject){
+      var ref= new Firebase(FURL);
+      var auth= $firebaseAuth(ref);
+      
+      var Auth = { 
+      user:{},
+      
+      createProfile: function(uid,user){
+        var profile= {
+          name: user.name,
+          email: user.email,
+          image: 'tbd'
+        }
+        return ref.child('profile').child(uid).set(profile);
+      },
+      
+      login: function(user){
+        console.log('we got to login function');
+        return auth.$authWithPassword({
+          email: user.email,
+          password : user.password,
+        });
+      },
+      
+        
+      register: function(user){
+        console.log('register func')
+        return auth.$createUser({
+          email: user.email,
+          password : user.password
+        }).then(function (){
+          console.log('user is saving');
+          return Auth.login(user);
+        }).then(function(data){
+          console.log ('the user is', data);
+          return Auth.createProfile(data.uid,user);
+          
+        })
+      },
+      
+      logout: function(){
+        auth.$unauth();
+      }
+    }
+    
+    auth.$onAuth(function(authData){
+      if (authData){
+        Auth.user = authData;
+        Auth.user.profile= $firebaseObject(ref.child('profile').child(authData.uid));
+        console.log('the user has already logged in');
+        $state.go('app.feed');
+      }else {
+        $state.go('login');
+      }
+      
+    })
+    
+    return Auth;
+  
+})
+
+.service('Posts',function (FURL, $firebaseArray, Auth){
+  var ref= new Firebase(FURL);
+  var posts= $firebaseArray(ref.child('posts'));
+  
+  var Posts= {
+    savePost: function (status_post){
+      console.log('the user profile is', Auth.user.profile);
+      var newPost = {
+          user: Auth.user.profile.name,
+          uid: Auth.user.uid,
+          body: status_post.text,
+          audience: status_post.audience,
+          images: status_post.images
+      };
+      return posts.$add(newPost).then(function(){
+        console.log ('new post added to databse')
+      })
+    }
+  };
+  return Posts;
+});
+
+
 ;

@@ -32,9 +32,27 @@ angular.module('your_app_name.auth.controllers', [])
   };
 })
 
-.controller('CreateAccountCtrl', function($scope, $state){
+.controller('CreateAccountCtrl', function($scope, $state, Auth){
+   $scope.user = {
+   //name: '',
+   //userName: '',
+   //email: '',
+   //password: ''
+ };
+ 
+ user= $scope.user;
+  
+
 	$scope.doSignUp = function(){
-		console.log("doing sign up");
+		console.log($scope.user);		
+		
+		//posting code
+   // $http.post('https://blocapp.firebaseio.com/users.json', $scope.user);
+    
+    //link to firebase, generate uid
+     Auth.register(user);
+  
+  //take to newsfeed
 		$state.go('app.feed');
 	};
 })
