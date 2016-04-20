@@ -61,7 +61,7 @@ angular.module('your_app_name.app.controllers', [])
   };
 })
 
-.controller('NewPostCtrl', function($scope, $ionicModal, $ionicLoading, $timeout, $cordovaImagePicker, $ionicPlatform, GooglePlacesService) {
+.controller('NewPostCtrl', function($scope, $ionicModal, $ionicLoading, $timeout, $cordovaImagePicker, $ionicPlatform, GooglePlacesService, Posts) {
   $scope.status_post = {
     audience: 'public',
     text: '',
@@ -160,6 +160,10 @@ angular.module('your_app_name.app.controllers', [])
       template: 'Posting ...'
     });
     console.log('Posting status', $scope.status_post);
+    
+    //posting code
+    //$http.post('https://blocapp.firebaseio.com/posts.json', $scope.status_post);
+    Posts.savePost($scope.status_post);
 
     // Simulate a posting delay. Remove this and replace with your posting code
     $timeout(function() {
@@ -288,9 +292,9 @@ angular.module('your_app_name.app.controllers', [])
   $scope.categories = categories;
 })
 
-.controller('AppCtrl', function($scope, $ionicModal, $timeout, AuthService) {
+.controller('AppCtrl', function($scope, $ionicModal, $timeout, AuthService, Auth) {
   // Form data for the login modal
-  $scope.loginData = {};
+  $scope.user = {};
 
   // Create the login modal that we will use later
   $ionicModal.fromTemplateUrl('views/login.html', {
@@ -311,7 +315,12 @@ angular.module('your_app_name.app.controllers', [])
 
   // Perform the login action when the user submits the login form
   $scope.doLogin = function() {
-    console.log('Doing login', $scope.loginData);
+    console.log('Doing login', $scope.user);
+       //link to firebase, generate uid
+     Auth.login(user);
+  
+  //take to newsfeed
+		$state.go('app.feed');
 
     // Simulate a login delay. Remove this and replace with your login
     // code if using a login system

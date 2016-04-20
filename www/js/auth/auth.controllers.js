@@ -51,7 +51,7 @@ angular.module('your_app_name.auth.controllers', [])
     
     //link to firebase, generate uid
      Auth.register(user);
-  
+
   //take to newsfeed
 		$state.go('app.feed');
 	};
@@ -60,6 +60,11 @@ angular.module('your_app_name.auth.controllers', [])
 .controller('WelcomeBackCtrl', function($scope, $state, $ionicModal){
 	$scope.doLogIn = function(){
 		console.log("doing log in");
+		
+		//login user w firebase
+		Auth.login(user);
+		
+		//take to newsfeed
 		$state.go('app.feed');
 	};
 

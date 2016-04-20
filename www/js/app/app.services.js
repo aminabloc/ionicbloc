@@ -104,152 +104,9 @@ angular.module('your_app_name.app.services', [])
 
 
 
-.service('FeedService', function ($http, $q){
-
-  this.getFeed = function(page){
-
-    var pageSize = 5, // set your page size, which is number of records per page
-        skip = pageSize * (page-1),
-        totalPosts = 1,
-        totalPages = 1,
-        dfd = $q.defer();
-
-    $http.get('database.json').success(function(database) {
-
-      totalPosts = database.posts.length;
-      totalPages = totalPosts/pageSize;
-
-      var sortedPosts =  _.sortBy(database.posts, function(post){ return new Date(post.date); });
-
-      var postsToShow = sortedPosts.slice(skip, skip + pageSize);
-
-      //add user data to posts
-      var posts = _.each(postsToShow.reverse(), function(post){
-        post.user = _.find(database.users, function(user){ return user.id == post.userId; });
-        return post;
-      });
-
-      dfd.resolve({
-        posts: posts,
-        totalPages: totalPages
-      });
-    });
-
-    return dfd.promise;
-  };
-
-  this.getFeedByCategory = function(page, categoryId){
-
-    var pageSize = 5, // set your page size, which is number of records per page
-        skip = pageSize * (page-1),
-        totalPosts = 1,
-        totalPages = 1,
-        dfd = $q.defer();
-
-    $http.get('database.json').success(function(database) {
-
-      totalPosts = database.posts.length;
-      totalPages = totalPosts/pageSize;
-
-      var sortedPosts =  _.sortBy(database.posts, function(post){ return new Date(post.date); });
-
-      if(categoryId){
-        sortedPosts = _.filter(sortedPosts, function(post){ return post.category.id == categoryId; });
-      }
-
-      var postsToShow = sortedPosts.slice(skip, skip + pageSize);
-
-      //add user data to posts
-      var posts = _.each(postsToShow.reverse(), function(post){
-        post.user = _.find(database.users, function(user){ return user.id == post.userId; });
-        return post;
-      });
-
-      dfd.resolve({
-        posts: posts,
-        totalPages: totalPages
-      });
-    });
-
-    return dfd.promise;
-  };
-
-  this.getFeedByTrend = function(page, trendId){
-
-    var pageSize = 5, // set your page size, which is number of records per page
-        skip = pageSize * (page-1),
-        totalPosts = 1,
-        totalPages = 1,
-        dfd = $q.defer();
-
-    $http.get('database.json').success(function(database) {
-
-      totalPosts = database.posts.length;
-      totalPages = totalPosts/pageSize;
-
-      var sortedPosts =  _.sortBy(database.posts, function(post){ return new Date(post.date); });
-
-      if(trendId){
-        sortedPosts = _.filter(sortedPosts, function(post){ return post.trend.id == trendId; });
-      }
-
-      var postsToShow = sortedPosts.slice(skip, skip + pageSize);
-
-      //add user data to posts
-      var posts = _.each(postsToShow.reverse(), function(post){
-        post.user = _.find(database.users, function(user){ return user.id == post.userId; });
-        return post;
-      });
-
-      dfd.resolve({
-        posts: posts,
-        totalPages: totalPages
-      });
-    });
-
-    return dfd.promise;
-  };
-
-  this.getPostComments = function(post){
-    var dfd = $q.defer();
-
-    $http.get('database.json').success(function(database) {
-      var comments_users = database.users;
-      // Randomize comments users array
-      comments_users = window.knuthShuffle(comments_users.slice(0, post.comments));
-
-      var comments_list = [];
-      // Append comment text to comments list
-      comments_list = _.map(comments_users, function(user){
-        var comment = {
-          user: user,
-          text: database.comments[Math.floor(Math.random()*database.comments.length)].comment
-        };
-        return comment;
-      });
-
-      dfd.resolve(comments_list);
-    });
-
-    return dfd.promise;
-  };
-
-  this.getPost = function(postId){
-    var dfd = $q.defer();
-
-    $http.get('database.json').success(function(database) {
-      var post = _.find(database.posts, function(post){
-        return post.id == postId;
-      });
-
-      post.user = _.find(database.users, function(user){ return user.id == post.userId; });
-
-      dfd.resolve(post);
-    });
-
-    return dfd.promise;
-  };
-
+.service('FeedService', function ($scope, Posts){
+  $scope.posts = Posts.all()
+  
 })
 
 .service('PeopleService', function ($http, $q){
@@ -403,6 +260,7 @@ angular.module('your_app_name.app.services', [])
           return Auth.createProfile(data.uid,user);
           
         })
+        $state.go('app.feed');
       },
       
       logout: function(){
@@ -431,6 +289,9 @@ angular.module('your_app_name.app.services', [])
   var posts= $firebaseArray(ref.child('posts'));
   
   var Posts= {
+    all: function(){
+      return posts
+    },
     savePost: function (status_post){
       console.log('the user profile is', Auth.user.profile);
       var newPost = {
